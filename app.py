@@ -14,7 +14,5 @@ def waytodashboard(mail):
     return render_template('dashboard.html', useremail = mail)
 
 
-
-
 if __name__ == '__main__':
     app.run()
