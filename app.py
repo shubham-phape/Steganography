@@ -12,6 +12,13 @@ def waytodashboard(mail):
     
     print(mail)
     return render_template('dashboard.html', useremail = mail)
+    
+
+@app.route('/hash/<mail>', methods = ['GET', 'POST'])
+def hash(mail):
+
+    print(mail)
+    return mail
 
 
 if __name__ == '__main__':
