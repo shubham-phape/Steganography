@@ -35,9 +35,10 @@
 
         <!-- Column to FORM for key Encryption method AES -->
         <div class="col">
-          <button onclick="generatekey()" class=" w3-block w3-button" style="color: #4CAF50" >Generte a key</button>
-          <p id="showkey" name="showkey" style="color: #4CAF50"> badncbajd</p>
-
+          <button onclick="generatekey()" class=" w3-block w3-button" style="color: #4CAF50">Generte a key</button>
+        </div>
+        <div class="col">
+          <p id="showkey" name="showkey" style="color: #4CAF50"> </p>
         </div>
       </div>
       <!---Row Ends here-->
@@ -76,24 +77,25 @@
 
 
     function generatekey() {
-      let url =  "/generateonekey"
+      let url = "/generateonekey"
       fetch('/generateonekey', {
-      method: "POST",
-      cache: "no-cache",
-      headers: new Headers()
-    })
-      .then(function (response) {
-        if (response.status !== 200) {
-          console.log(`Looks like there was a problem. Status code: ${response.status}`);
-          return;
-        }
-        response.json().then(function (data) {
-          console.log(data.message);
-        });
+        method: "POST",
+        cache: "no-cache",
+        headers: new Headers()
       })
-      .catch(function (error) {
-        console.log("Fetch error: " + error);
-      });
+        .then(function (response) {
+          if (response.status !== 200) {
+            console.log(`Looks like there was a problem. Status code: ${response.status}`);
+            return;
+          }
+          response.json().then(function (data) {
+            document.getElementById("showkey").innerHTML = data.message;
+            console.log(data.message);
+          });
+        })
+        .catch(function (error) {
+          console.log("Fetch error: " + error);
+        });
 
     }
 
