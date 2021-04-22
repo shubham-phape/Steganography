@@ -44,7 +44,7 @@ def generateonekey():
 
     print(req)
 
-    res = make_response(jsonify({"message": "OK"}), 200)
+    res = make_response(jsonify({"onekey": "OK"}), 200)
     return res
 
 
