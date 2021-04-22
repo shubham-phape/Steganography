@@ -25,25 +25,53 @@
       </div>
     </div>
   </div>
-  <div class="w3-content" style="max-width:1100px;margin-top:80px;margin-bottom:80px">
+  <div class="w3-content" style="max-width:1000px;margin-top:80px;margin-bottom:40px">
     <div class="container w3-center">
-      <h2>Hello, {{useremail}}</h2>
-
+      <h3>Hello, {{useremail}}</h3>
+      <h3 style="text-align:center">Encrypt a file using One key algorithm here it is AES</h3>
+    </div>
+  </div>
+  <div class="w3-content" style="max-width:800px;margin-top:40px;margin-bottom:80px">
+    <div class="container w3-center">
       <!---Row Starts here-->
       <div class="row">
-        <h3 style="text-align:center">Encrypt a file using One key algorithm here it is AES</h3>
-
+        <div class="col">
+          <button onclick="generatekey()" class=" w3-block w3-button"
+            style="background-color: #4CAF50; color: white; display: inline-block; border-radius: 4px;border: 5px;">Generte
+            a key</button>
+        </div>
         <!-- Column to FORM for key Encryption method AES -->
-        <div class="col">
-          <button onclick="generatekey()" class=" w3-block w3-button" style="color: #4CAF50">Generte a key</button>
-        </div>
-        <div class="col">
-          <p id="showkey" name="showkey" style="color: #4CAF50"> </p>
-        </div>
+        <form action="/onekeyhashfile" method="POST" enctype="multipart/form-data">
+
+          <div class="col">
+            <input type="text" name="aes_key" id="aes_key"  readonly style="color: #4CAF50" required>
+
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <p>Please select file to upload</p>
+            </div>
+            <div class="col">
+              <input type="file" name="file" id="aesfile"  required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col"></div>
+            <div class="col">
+              <input type="submit" value="Encrypt">
+            </div>
+
+          </div>
       </div>
-      <!---Row Ends here-->
+      </form>
 
     </div>
+
+
+    <!---Row Ends here-->
+
+  </div>
   </div>
   <!--END of Body here-->
 
@@ -89,7 +117,7 @@
             return;
           }
           response.json().then(function (data) {
-            document.getElementById("showkey").innerHTML = data.message;
+            document.getElementById("aes_key").value = data.message;
             console.log(data.message);
           });
         })
