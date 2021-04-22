@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, make_response
 from cryptography.fernet import Fernet
-
+import pyrebase
 
 #References: https://www.thepythoncode.com/article/encrypt-decrypt-files-symmetric-python
 
