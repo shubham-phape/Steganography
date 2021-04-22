@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from cryptography import Fernet
+# from cryptography import Fernet
 
 
 app = Flask(__name__)
@@ -37,10 +37,11 @@ def rsa(mail):
     return     render_template('rsa.html', useremail = mail)
 
 
-@app.route('/generateonekey')
+@app.route('/generateonekey', methods = ['GET', 'POST'])
 def generateonekey():
 
-    return Fernet.generate_key()
+   # return Fernet.generate_key()
+   return "hello"
 
 
 
