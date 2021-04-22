@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify, make_response
 # from cryptography import Fernet
 
 
@@ -39,9 +39,13 @@ def rsa(mail):
 
 @app.route('/generateonekey', methods = ['GET', 'POST'])
 def generateonekey():
-
    # return Fernet.generate_key()
-   return "hello"
+    req = request.get_json()
+
+    print(req)
+
+    res = make_response(jsonify({"message": "OK"}), 200)
+    return res
 
 
 
