@@ -7,6 +7,21 @@ import pyrebase
 app = Flask(__name__)
 
 
+firebaseConfig = {
+  "apiKey": "AIzaSyByT3jioOwrU62L3AnxqPIqB-EFihwsRlI",
+  "authDomain": "crypto-8f870.firebaseapp.com",
+  "databaseURL": "https://crypto-8f870-default-rtdb.firebaseio.com",
+  "projectId": "crypto-8f870",
+  "storageBucket": "crypto-8f870.appspot.com",
+  "messagingSenderId": "826758797675",
+  "appId": "1:826758797675:web:75ac6146638f23a91cd42e",
+  "measurementId": "G-DGDHH1DP16"
+}
+
+firebase = pyrebase.initialize_app(firebaseConfig)
+auth = firebase.auth()
+storage = firebase.storage()
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -46,8 +61,8 @@ def generateonekey():
     res = make_response(jsonify({"message": hex_str}), 200)
     return res
 
-@app.route('/onekeyhashfile', methods = ['POST', 'GET'])
-def onekeyhashfile():
+@app.route('/onekeyencryptfile', methods = ['POST', 'GET'])
+def onekeyencryptfile():
     if (request.method == 'POST'):
         file = request.files['file']
         encryptionkey = request.form.get('aes_key')
@@ -58,8 +73,12 @@ def onekeyhashfile():
         fernet = Fernet(new_rnd_bytes)
         encrypted_data = fernet.encrypt(file.read())
         print(new_rnd_bytes)
-    
+
+
+        
         f = open(output_filename,"wb")
+
+        #writing file to local 
         f.write(encrypted_data)
         f.close()
     return output_filename
