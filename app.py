@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify, make_response
 from cryptography.fernet import Fernet
 import pyrebase
+import flask
 
 #References: https://www.thepythoncode.com/article/encrypt-decrypt-files-symmetric-python
 
@@ -21,6 +22,7 @@ firebaseConfig = {
 firebase = pyrebase.initialize_app(firebaseConfig)
 auth = firebase.auth()
 storage = firebase.storage()
+db = firebase.database()
 
 @app.route('/')
 def index():
@@ -65,6 +67,7 @@ def generateonekey():
 def onekeyencryptfile():
     if (request.method == 'POST'):
         file = request.files['file']
+        curr_user = request.form.get('cur_user')
         encryptionkey = request.form.get('aes_key')
         
         new_rnd_bytes = bytes.fromhex(encryptionkey)
@@ -82,6 +85,14 @@ def onekeyencryptfile():
         f.write(encrypted_data)
         f.close()
     return output_filename
+
+@app.route('/test', methods = ['POST', 'GET'])
+def test():
+    rs= db.child("users").get()
+    print(rs.val())
+    data = {"filename": "Mortimer 'Morty' Smith"}
+    db.child("users").child("Morty").set(data)
+    return rs.val()
 
 if __name__ == '__main__':
     app.run()
