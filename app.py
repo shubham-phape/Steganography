@@ -24,6 +24,7 @@ auth = firebase.auth()
 storage = firebase.storage()
 db = firebase.database()
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -58,7 +59,9 @@ def generateonekey():
     req = request.get_json()
     key = Fernet.generate_key()
     hex_str = key.hex()
-    new_rnd_bytes = bytes.fromhex(hex_str)
+
+    #converting hex key to bytes for encryption
+    #new_rnd_bytes = bytes.fromhex(hex_str)
     
     res = make_response(jsonify({"message": hex_str}), 200)
     return res
@@ -67,24 +70,29 @@ def generateonekey():
 def onekeyencryptfile():
     if (request.method == 'POST'):
         file = request.files['file']
-        curr_user = request.form.get('cur_user')
+        curruser = request.form.get('cur_user')
         encryptionkey = request.form.get('aes_key')
-        
+        outputfilename = file.filename
+
+        #converting hex key to bytes for encryption
         new_rnd_bytes = bytes.fromhex(encryptionkey)
-        
-        output_filename = "/encrypted/"+file.filename
+
+        #encrypting file data
         fernet = Fernet(new_rnd_bytes)
-        encrypted_data = fernet.encrypt(file.read())
-        print(new_rnd_bytes)
-
-
+        encrypted_data = fernet.encrypt(file.read())      
         
-        f = open(output_filename,"wb")
+        #writing file to firebase cloud 
+        storage.child(curruser+"/" + outputfilename).put(encrypted_data)
 
-        #writing file to local 
-        f.write(encrypted_data)
-        f.close()
-    return output_filename
+        #writing metadata to database
+        data = {
+                                "filename" : outputfilename,
+                                "encryption": "aes",
+                                "aeskey": encryptionkey
+                                 }                
+        db.child("users").child(encodeemail(curruser)).push(data)
+
+    return render_template('aes.html', useremail = curruser)
 
 @app.route('/test', methods = ['POST', 'GET'])
 def test():
@@ -93,6 +101,14 @@ def test():
     data = {"filename": "Mortimer 'Morty' Smith"}
     db.child("users").child("Morty").set(data)
     return rs.val()
+
+def decodeemail(email):
+    dec_email = email.replace(",", ".")
+    return dec_email
+
+def encodeemail(email):
+    enc_email = email.replace(".", ",")
+    return enc_email
 
 if __name__ == '__main__':
     app.run()
