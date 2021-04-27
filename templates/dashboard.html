@@ -24,7 +24,7 @@
       </div>
     </div>
   </div>
-  <div class="w3-content" style="max-width:1100px;margin-top:80px;margin-bottom:80px">
+  <div class="w3-content" style="max-width:1100px;margin-top:80px;margin-bottom:40px">
     <div class="container w3-center">
       <h1>Hello, {{useremail}}</h1>
 
@@ -55,23 +55,47 @@
 
       </div>
       <!---Row Ends here-->
-
     </div>
   </div>
+  <div class="w3-content" style="max-width:1100px;margin-top:10px;margin-bottom:40px">
+    <div class="container w3-center">
+      <!-- Row to display the files Starts -->
+      <h3 style="text-align:center">List of Encrypted files below</h3>
+      <div class="row" id="divtofiles" >
+       
+      
+
+
+      </div>
+      <!-- Row display the files ENds here -->
+    </div>
+  </div>
+  <div id="decryptdiv" class="w3-content" style="max-width:1100px;margin-top:10px;margin-bottom:40px; display: none;">
+    <div class="container w3-center">
+      <h4 style="text-align:center">Decrypt the following file</h4>
+      <p id ="nameoffile"></p>
+    </div></div>
+
   <!--END of Body here-->
 
   <!-- Insert these scripts at the bottom of the HTML, but before you use any Firebase services -->
   <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
   <!-- The core Firebase JS SDK is always required and must be listed first -->
   <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
-
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
   <!-- TODO: Add SDKs for Firebase products that you want to use
      https://firebase.google.com/docs/web/setup#available-libraries -->
   <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-analytics.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/8.4.1-202131362347/firebase-auth.min.js"
     integrity="sha512-l0i+O3AfLS/mtNotaGw8tg4qg5bVCZDEwUDiDjAicmBrR0G+lqMlmSozvfPcX1TwliG4tbuFgo2l/xAlFc0NkQ=="
     crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.3.2/firebase-storage.js"></script>
+
   <script>
+
+if (document.getElementById('decryptdiv').style.display == 'block') {
+  document.getElementById('decryptdiv').style.display = 'none';
+    }
     // Your web app's Firebase configuration
     // For Firebase JS SDK v7.20.0 and later, measurementId is optional
     var firebaseConfig = {
@@ -87,7 +111,38 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     firebase.analytics();
+    var us_email = "{{useremail}}";
+    var referencelist = firebase.storage().ref().child('/').child(us_email);
+    
+    referencelist.listAll().then(function (result) {
+      if(result.items.length == 0){
+        // if there is no response
+        document.getElementById("divtofiles").innerHTML = "Uhh oh no files encrypted!";
+      }
+        result.items.forEach(function (fileref) {
+        var filename = String(fileref).substring(String(fileref).lastIndexOf('/') + 1);
+        fileref.getDownloadURL().then(function (url) {
+          var t = '<div class=\"row\"><div class=\"col w3-container w3-hover-shadow\"><a href="' +  url.toString() + '">' +  filename + '\'</a></div><div class=\"col w3-left\"><button onclick="decryptit(\'' +  filename + '\')">Decrypt it</button></div></div>';
+          
+          document.getElementById("divtofiles").innerHTML = document.getElementById("divtofiles").innerHTML + t;
+          //img_index++;
+          //
+        });
+      });
 
+    });
+
+    // function to show decrypt window
+    function decryptit(val){
+      var dediv = document.getElementById('decryptdiv');
+      if (dediv.style.display == 'none') {
+        dediv.style.display = 'block';
+        document.getElementById("nameoffile").innerHTML = val;
+    }
+    else {
+       dediv.style.display = 'none';
+      }
+    }
 
 
     function logout() {
