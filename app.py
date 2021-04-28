@@ -16,7 +16,8 @@ firebaseConfig = {
   "storageBucket": "crypto-8f870.appspot.com",
   "messagingSenderId": "826758797675",
   "appId": "1:826758797675:web:75ac6146638f23a91cd42e",
-  "measurementId": "G-DGDHH1DP16"
+  "measurementId": "G-DGDHH1DP16",
+  "serviceAccount":"templates/crypto-8f870-firebase-adminsdk-g2hwp-c5cfe81a91.json"
 }
 
 firebase = pyrebase.initialize_app(firebaseConfig)
@@ -96,11 +97,29 @@ def onekeyencryptfile():
 
 @app.route('/test', methods = ['POST', 'GET'])
 def test():
-    rs= db.child("users").get()
-    print(rs.val())
-    data = {"filename": "Mortimer 'Morty' Smith"}
-    db.child("users").child("Morty").set(data)
-    return rs.val()
+    #s= db.child("users").get()
+    streference = storage.child("/shubham@gmail.com/corgi.png").get_url(None)
+    print(streference)
+    return "ndcfj"
+
+# dECRYPT THE FILE
+@app.route('/decryptthefile',methods = ['POST', 'GET'])
+def decryptthefile():
+    if(request.method == 'POST'):
+        filename = request.form.get('filename')
+        username = request.form.get('username')
+
+        #retrieving the file from strograge
+        streference = storage.child('/').child('').child(username).list()
+        print(streference)
+
+
+
+        #retrieving the file meta data from data base
+
+
+
+
 
 def decodeemail(email):
     dec_email = email.replace(",", ".")

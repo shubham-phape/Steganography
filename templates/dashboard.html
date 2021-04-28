@@ -61,9 +61,9 @@
     <div class="container w3-center">
       <!-- Row to display the files Starts -->
       <h3 style="text-align:center">List of Encrypted files below</h3>
-      <div class="row" id="divtofiles" >
-       
-      
+      <div class="row" id="divtofiles">
+
+
 
 
       </div>
@@ -73,8 +73,9 @@
   <div id="decryptdiv" class="w3-content" style="max-width:1100px;margin-top:10px;margin-bottom:40px; display: none;">
     <div class="container w3-center">
       <h4 style="text-align:center">Decrypt the following file</h4>
-      <p id ="nameoffile"></p>
-    </div></div>
+      <p id="nameoffile"></p>
+    </div>
+  </div>
 
   <!--END of Body here-->
 
@@ -93,8 +94,8 @@
 
   <script>
 
-if (document.getElementById('decryptdiv').style.display == 'block') {
-  document.getElementById('decryptdiv').style.display = 'none';
+    if (document.getElementById('decryptdiv').style.display == 'block') {
+      document.getElementById('decryptdiv').style.display = 'none';
     }
     // Your web app's Firebase configuration
     // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -113,17 +114,17 @@ if (document.getElementById('decryptdiv').style.display == 'block') {
     firebase.analytics();
     var us_email = "{{useremail}}";
     var referencelist = firebase.storage().ref().child('/').child(us_email);
-    
+
     referencelist.listAll().then(function (result) {
-      if(result.items.length == 0){
+      if (result.items.length == 0) {
         // if there is no response
         document.getElementById("divtofiles").innerHTML = "Uhh oh no files encrypted!";
       }
-        result.items.forEach(function (fileref) {
+      result.items.forEach(function (fileref) {
         var filename = String(fileref).substring(String(fileref).lastIndexOf('/') + 1);
         fileref.getDownloadURL().then(function (url) {
-          var t = '<div class=\"row\"><div class=\"col w3-container w3-hover-shadow\"><a href="' +  url.toString() + '">' +  filename + '\'</a></div><div class=\"col w3-left\"><button onclick="decryptit(\'' +  filename + '\')">Decrypt it</button></div></div>';
-          
+          var t = '<div class=\"row\"><div class=\"col w3-container w3-hover-shadow\"><a href="' + url.toString() + '">' + filename + '\'</a></div><div class=\"col w3-left\"><button onclick="decryptit(\'' + filename + '\')">SelEct it for decryption.</button></div></div>';
+
           document.getElementById("divtofiles").innerHTML = document.getElementById("divtofiles").innerHTML + t;
           //img_index++;
           //
@@ -133,14 +134,17 @@ if (document.getElementById('decryptdiv').style.display == 'block') {
     });
 
     // function to show decrypt window
-    function decryptit(val){
+    function decryptit(val) {
       var dediv = document.getElementById('decryptdiv');
       if (dediv.style.display == 'none') {
         dediv.style.display = 'block';
-        document.getElementById("nameoffile").innerHTML = val;
-    }
-    else {
-       dediv.style.display = 'none';
+        
+        
+        temphtml = '<tr><td>File Name:</td><td>'+val+'</td></tr><br><tr><form  method ="POST" action="/decryptthefile"><input type="hidden" name="username" value="'+us_email+'" ><input type="hidden" name="filename" value="'+val+'" ><input type="submit" value="Decrypt it"></form></tr>';
+        document.getElementById("nameoffile").innerHTML = temphtml;
+      }
+      else {
+        dediv.style.display = 'none';
       }
     }
 
