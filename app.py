@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, jsonify, make_response, send_from_directory
 from cryptography.fernet import Fernet
-import pyrebase, flask, base64, urllib, binascii,os, json
+import pyrebase, flask, base64, urllib, binascii,os, json, hashlib
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -10,7 +10,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 
 # References: https://www.thepythoncode.com/article/encrypt-decrypt-files-symmetric-python
 # https://nitratine.net/blog/post/asymmetric-encryption-and-decryption-in-python/
-
+#https://stackoverflow.com/questions/24570066/calculate-md5-from-werkzeug-datastructures-filestorage-without-saving-the-object
 app = Flask(__name__)
 
 
@@ -45,8 +45,15 @@ def waytodashboard(mail):
 
 @app.route('/hash/<mail>', methods=['GET', 'POST'])
 def hash(mail):
+    tosend = {
+            "message" : "",
+            "useremail" : mail,
+            "hash1": "",
+            "hash2": "",
+            "flag" : "0"
+        }
 
-    return render_template('hash.html', useremail=mail)
+    return render_template('hash.html', user= tosend)
 
 
 @app.route('/aes/<mail>', methods=['GET', 'POST'])
@@ -265,6 +272,39 @@ def downloadfile(filename):
         print(e)
     return send_from_directory(path, filename)
 
+
+@app.route('/comparehash', methods=['GET', 'POST'])
+def comparehash():
+    if (request.method == 'POST'):
+        fileone = request.files['fileone']
+        filetwo = request.files['filetwo']
+        curruser = request.form.get('cur_user')
+        
+        #hashing both the files
+
+        img_key1 = hashlib.md5(fileone.read()).hexdigest() 
+        img_key2 = hashlib.md5(filetwo.read()).hexdigest() 
+
+        #comparing hash of both files
+        m=''
+        if(img_key1 == img_key2):
+            m= "Both the files are same so their hash is same too."
+            print("same")
+        else:
+            m= "Different files so they have different hash"
+            print("not same")
+
+        tosend = {
+            "message" : m,
+            "useremail" : curruser,
+            "hash1": img_key1,
+            "hash2": img_key2,
+            "flag" : "1",
+            "name1" : fileone.filename,
+            "name2" : filetwo.filename
+        }
+        
+    return render_template('hash.html', user= tosend)
 
 
 def decodeemail(email):

@@ -24,23 +24,59 @@
       </div>
     </div>
   </div>
-  <div class="w3-content" style="max-width:1100px;margin-top:80px;margin-bottom:80px">
+  <div class="w3-content" style="max-width:1100px;margin-top:80px;margin-bottom:40px">
     <div class="container w3-center">
-      <h2>Hello, {{useremail}}</h2>
+      <h2 id = "welcome"></h2>
 
       <!---Row Starts here-->
       <div class="row">
         <h3 style="text-align:center">Hash a file and compare</h3>
-        
+        <h3 style="text-align:center">Comparing Hash values of two files</h3>
+      </div>
+    </div>
+    </div>
+    <div class="w3-content" style="max-width:800px;margin-top:40px;margin-bottom:40px">
+      <div class="container w3-center">
         <!-- Column to FORM for key Encryption method AES -->
-        <div class="col">
+        <div class="row" id="result">
+          
+          
           
         </div>
       </div>
       <!---Row Ends here-->
-
     </div>
-  </div>
+
+    <div class="w3-content" style="max-width:800px;margin-top:40px;margin-bottom:40px">
+      <div class="container w3-center">
+        <!-- Column to FORM for key Encryption method AES -->
+        <div class="row">
+          <form action="/comparehash" method="POST" enctype="multipart/form-data">
+            <div class="row"> 
+            <div class="col">
+               <p>Upload file 1</p>
+               <p>Upload file 2</p>
+             </div> 
+            <div class="col">
+              <input type="file" name="fileone" id="fileone"  required>
+              <input type="file" name="filetwo" id="filetwo" required> 
+              <input type="hidden" name="cur_user" value="{{useremail}}"> 
+              <input type="hidden" name="cur_user" value="{{useremail}}">
+
+            </div>
+          </div>
+            <div class="row">
+              <div class="col"></div>
+              <div class="col">
+                <input type="submit" value="Compare Hash">
+              </div>
+            </div>
+          </form>
+          </div>
+      </div>
+      <!---Row Ends here-->
+    </div>
+  
   <!--END of Body here-->
 
   <!-- Insert these scripts at the bottom of the HTML, but before you use any Firebase services -->
@@ -71,8 +107,12 @@
     firebase.initializeApp(firebaseConfig);
     firebase.analytics();
 
-
-
+    var user = JSON.parse('{{ user | tojson | safe}}');
+    document.getElementById('welcome').innerHTML = "Hello, "+ user.useremail;
+    if(user.flag == "1"){
+      document.getElementById('result').innerHTML = '<h4>Result : </h4><div class="col"><p>Hash digest for '+user.name1+'</p><p>Hash digest for '+user.name2+'</p></div><div class="col"><p>'+user.hash1+'</p><p>'+user.hash2+'</p></div><h4 style="color:blue;">'+user.message+'</h4>';
+    }
+    
     function logout() {
       firebase.auth().signOut().then(function () {
         // Sign-out successful.
