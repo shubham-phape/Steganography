@@ -1,10 +1,15 @@
 from flask import Flask, render_template, request, jsonify, make_response, send_from_directory
 from cryptography.fernet import Fernet
-import pyrebase
-import flask
-import urllib
+import pyrebase, flask, base64, urllib, binascii,os, json
+
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.asymmetric import padding
 
 # References: https://www.thepythoncode.com/article/encrypt-decrypt-files-symmetric-python
+# https://nitratine.net/blog/post/asymmetric-encryption-and-decryption-in-python/
 
 app = Flask(__name__)
 
@@ -51,7 +56,7 @@ def aes(mail):
 
 
 @app.route('/rsa/<mail>', methods=['GET', 'POST'])
-def rsa(mail):
+def rsaweb(mail):
 
     return render_template('rsa.html', useremail=mail)
 
@@ -67,6 +72,75 @@ def generateonekey():
 
     res = make_response(jsonify({"message": hex_str}), 200)
     return res
+
+
+@app.route('/generatetwokey', methods=['GET', 'POST'])
+def generatetwokey():
+    req = request.get_json()
+    
+    #generating key
+    private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048, backend=default_backend())
+    public_key = private_key.public_key()
+
+    #saving the keys        
+    privatekeybytes = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption()
+        )
+
+    publickeybytes = public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+
+
+    if(request.method == 'POST'):
+        #submitted the form
+        file = request.files['file']
+        curruser = request.form.get('cur_user')
+        encryptionkey = request.form.get('aes_key')
+        outputfilename = file.filename
+
+        msg = file.read()
+
+        #encrypting
+        encrypted = public_key.encrypt(
+        msg,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+            )
+        )
+
+        # writing file to firebase cloud
+        filetosave = open("encrypted/"+outputfilename, "wb")
+        filetosave.write(encrypted)
+        filetosave.close()
+
+        
+        print(type(publickeybytes))
+        # writing metadata to database
+        data = {
+            "filename": outputfilename,
+            "encryption": "rsa",
+            "rsaprivatekey": privatekeybytes.hex(),
+            "rsapublickey" : publickeybytes.hex()
+        }
+        #print(data)
+        db.child("users").child(encodeemail(curruser)).push(data)
+
+        return render_template('rsa.html', useremail=curruser)
+
+    else:
+        print("get")
+
+        # converting hex key to bytes for encryption
+        #new_rnd_bytes = bytes.fromhex(hex_str)
+
+        res = make_response(jsonify({"public": publickeybytes.hex(), "private":privatekeybytes.hex()}), 200)
+        return res
 
 
 @app.route('/onekeyencryptfile', methods=['POST', 'GET'])
@@ -98,17 +172,17 @@ def onekeyencryptfile():
     return render_template('aes.html', useremail=curruser)
 
 
-@app.route('/test', methods=['POST', 'GET'])
-def test():
-    #s= db.child("users").get()
-    streferencefile = storage.child(
-        "/shubham@gmail.com/corgi.png").get_url(None)
-    filede = urllib.request.urlopen(streferencefile)
+@app.route('/getfilename', methods=['POST', 'GET'])
+def getfilename():
+    
+    k =[]
+    for file in os.listdir("encrypted"):
+        if True:
+            k.append(file)
+    res = make_response(jsonify({"public": k}), 200)
+    return res
 
-    return render_template('decryptedfile.html', filename="corgi.png")
-
-# dECRYPT THE FILE
-
+    
 
 @app.route('/decryptthefile', methods=['POST', 'GET'])
 def decryptthefile():
@@ -116,10 +190,7 @@ def decryptthefile():
         filename = request.form.get('filename')
         username = request.form.get('username')
 
-        # retrieving the file from strograge
-        streferencefile = storage.child(
-            "/"+username + "/" + filename).get_url(None)
-
+        
         # retrieving the file meta data from data base
         targetkey = ""
         filedata = db.child("users").child(encodeemail(username)).get().val()
@@ -130,17 +201,57 @@ def decryptthefile():
         # doing the decryption here
         if(filedata[k]['encryption'] == 'aes'):
             # this is one key AES file
+
+            # retrieving the file from strograge
+            streferencefile = storage.child("/"+username + "/" + filename).get_url(None)
+
             new_rnd_bytes = bytes.fromhex(filedata[k]['aeskey'])
             filedecrypted = urllib.request.urlopen(streferencefile)
             fernet = Fernet(new_rnd_bytes)
+            # decrypting the files
             decrypted_data = fernet.decrypt(filedecrypted.read())
+
+            #saving the file
             file = open("decrypted/"+filename, "wb")
             file.write(decrypted_data)
             file.close()
             return render_template('decryptedfile.html', filename=filename)
         else:
             print("rsa")
-            return "rsa"
+
+            #retieving the encrypted file
+            f = open("encrypted/"+ filename, 'rb')
+            enc_message = f.read()
+            f.close()   
+
+            #retrievibg the keys in hex from database
+            byprivatekey = bytes.fromhex(filedata[k]['rsaprivatekey'])
+            bypublickey = bytes.fromhex(filedata[k]['rsapublickey'])
+
+            #converting keys from  bytes  to desired types
+            private_key = serialization.load_pem_private_key(
+            byprivatekey,
+            password=None,
+            backend=default_backend()
+            )
+            # decrypting the files
+            original_message = private_key.decrypt(
+                enc_message,
+                padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+                )
+            )
+            print(original_message)
+            #saving the file in cloud directory
+            file = open("decrypted/"+filename, "wb")
+            file.write(original_message)
+            file.close()
+
+            #returning to open the file
+            return render_template('decryptedfile.html', filename=filename)
+            
 
     return "Page not ofund"
 

@@ -26,21 +26,59 @@
   </div>
   <div class="w3-content" style="max-width:1100px;margin-top:80px;margin-bottom:80px">
     <div class="container w3-center">
-      <h2>Hello, {{useremail}}</h2>
+      <h3>Hello, {{useremail}}</h3>
+      <h3 style="text-align:center">Encrypt a file using Two key algorithm here it is RSA</h3>
+    </div>
+  </div>
+  <div class="w3-content" style="max-width:800px;margin-top:40px;margin-bottom:80px">
+    <div class="container w3-center">
 
       <!---Row Starts here-->
       <div class="row">
-        <h3 style="text-align:center">Encrypt a file using Two key algorithm here it is RSA</h3>
-        
+
         <!-- Column to FORM for key Encryption method AES -->
         <div class="col">
-          
+          <button onclick="generatetwokey()" class=" w3-block w3-button"
+            style="background-color: #4CAF50; color: white; display: inline-block; border-radius: 4px;border: 5px;">Generte
+            a key</button>
         </div>
+        </div>
+        <!-- Column to FORM for key Encryption method AES -->
+        <form action="/generatetwokey" method="POST" enctype="multipart/form-data">
+          <div class="row"> 
+          <div class="col">
+             <p>Public Key</p>
+             <p>Private Key</p>
+           </div> 
+          <div class="col">
+            <input type="text" name="rsa_pub_key" id="rsa_pub_key" readonly style="color: #4CAF50" required>
+            <input type="text" name="rsa_private_key" id="rsa_private_key" readonly style="color: #4CAF50" required>
+
+          </div>
+        </div>
+          <div class="row">
+            <div class="col">
+              <p>Please select file to upload</p>
+            </div>
+            <div class="col">
+              <input type="file" name="file" id="rsafile" required>
+              <input type="hidden" name="cur_user" value="{{useremail}}">
+            </div>
+          </div>
+          <div class="row">
+            <div class="col"></div>
+            <div class="col">
+              <input type="submit" value="Encrypt">
+            </div>
+          </div>
+        </form>
       </div>
       <!---Row Ends here-->
+      
 
     </div>
   </div>
+
   <!--END of Body here-->
 
   <!-- Insert these scripts at the bottom of the HTML, but before you use any Firebase services -->
@@ -71,7 +109,29 @@
     firebase.initializeApp(firebaseConfig);
     firebase.analytics();
 
+    function generatetwokey() {
+      let url = "/generatetwokey"
+      fetch('/generatetwokey', {
+        method: "GET",
+        cache: "no-cache",
+        headers: new Headers()
+      })
+        .then(function (response) {
+          if (response.status !== 200) {
+            console.log(`Looks like there was a problem. Status code: ${response.status}`);
+            return;
+          }
+          response.json().then(function (data) {
+            document.getElementById("rsa_pub_key").value = data.public;
+            document.getElementById("rsa_private_key").value = data.private
+            console.log(data.message);
+          });
+        })
+        .catch(function (error) {
+          console.log("Fetch error: " + error);
+        });
 
+    }
 
     function logout() {
       firebase.auth().signOut().then(function () {
