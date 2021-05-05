@@ -169,9 +169,9 @@ def onekeyencryptfile():
 
         # writing file to firebase cloud
         # writing file to firebase cloud
-        path = "encrypted/"+curruser+"/"
-        os.makedirs(path)
-        filetosave = open(path+outputfilename, "wb")
+        path2 = "encrypted/"+curruser+"/"
+        Path(path2).mkdir(parents=True, exist_ok=True) 
+        filetosave = open(path2+outputfilename, "wb")
         filetosave.write(encrypted_data)
         filetosave.close()
         #storage.child(curruser+"/" + outputfilename).put(encrypted_data)
