@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, make_response, send_from_directory
 from cryptography.fernet import Fernet
 import pyrebase, flask, base64, urllib, binascii,os, json, hashlib
-
+from pathlib import Path
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
@@ -76,7 +76,7 @@ def generateonekey():
 
     # converting hex key to bytes for encryption
     #new_rnd_bytes = bytes.fromhex(hex_str)
-
+    print(hex_str)
     res = make_response(jsonify({"message": hex_str}), 200)
     return res
 
@@ -122,7 +122,9 @@ def generatetwokey():
         )
 
         # writing file to firebase cloud
-        filetosave = open("encrypted/"+outputfilename, "wb")
+        path1 = "encrypted/"+curruser+"/"
+        Path(path1).mkdir(parents=True, exist_ok=True) 
+        filetosave = open(path1+outputfilename, "wb")
         filetosave.write(encrypted)
         filetosave.close()
 
@@ -166,7 +168,13 @@ def onekeyencryptfile():
         encrypted_data = fernet.encrypt(file.read())
 
         # writing file to firebase cloud
-        storage.child(curruser+"/" + outputfilename).put(encrypted_data)
+        # writing file to firebase cloud
+        path = "encrypted/"+curruser+"/"
+        os.makedirs(path)
+        filetosave = open(path+outputfilename, "wb")
+        filetosave.write(encrypted_data)
+        filetosave.close()
+        #storage.child(curruser+"/" + outputfilename).put(encrypted_data)
 
         # writing metadata to database
         data = {
@@ -179,11 +187,11 @@ def onekeyencryptfile():
     return render_template('aes.html', useremail=curruser)
 
 
-@app.route('/getfilename', methods=['POST', 'GET'])
-def getfilename():
+@app.route('/getfilename/<nm>', methods=['POST', 'GET'])
+def getfilename(nm):
     
     k =[]
-    for file in os.listdir("encrypted"):
+    for file in os.listdir("encrypted/"+nm):
         if True:
             k.append(file)
     res = make_response(jsonify({"public": k}), 200)
@@ -197,37 +205,42 @@ def decryptthefile():
         filename = request.form.get('filename')
         username = request.form.get('username')
 
-        
+        print(filename)
         # retrieving the file meta data from data base
         targetkey = ""
         filedata = db.child("users").child(encodeemail(username)).get().val()
         for k in filedata.keys():
             if(filedata[k]['filename'] == filename):
                 targetkey = k
-
+        k= targetkey
+        print(filedata[k])
+        path = "encrypted/"+username+"/"
         # doing the decryption here
         if(filedata[k]['encryption'] == 'aes'):
             # this is one key AES file
 
             # retrieving the file from strograge
-            streferencefile = storage.child("/"+username + "/" + filename).get_url(None)
-
+            f = open(path+ filename, 'rb')
+            filedecrypted = f.read()
+            f.close()   
+            #print(streferencefile)
             new_rnd_bytes = bytes.fromhex(filedata[k]['aeskey'])
-            filedecrypted = urllib.request.urlopen(streferencefile)
+            #filedecrypted = urllib.request.urlopen(streferencefile)
             fernet = Fernet(new_rnd_bytes)
             # decrypting the files
-            decrypted_data = fernet.decrypt(filedecrypted.read())
+            decrypted_data = fernet.decrypt(filedecrypted)
 
-            #saving the file
+            #saving the file          
+        
             file = open("decrypted/"+filename, "wb")
             file.write(decrypted_data)
             file.close()
             return render_template('decryptedfile.html', filename=filename)
-        else:
+        if(filedata[k]['encryption'] == 'rsa'):
             print("rsa")
 
             #retieving the encrypted file
-            f = open("encrypted/"+ filename, 'rb')
+            f = open(path+ filename, 'rb')
             enc_message = f.read()
             f.close()   
 

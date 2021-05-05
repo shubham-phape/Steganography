@@ -115,27 +115,12 @@
     var us_email = "{{useremail}}";
     var referencelist = firebase.storage().ref().child('/').child(us_email);
 
-    referencelist.listAll().then(function (result) {
-      if (result.items.length == 0) {
-        // if there is no response
-        document.getElementById("divtofiles").innerHTML = "Uhh oh no files encrypted!";
-      }
-      result.items.forEach(function (fileref) {
-        var filename = String(fileref).substring(String(fileref).lastIndexOf('/') + 1);
-        fileref.getDownloadURL().then(function (url) {
-          var t = '<div class=\"row\"><div class=\"col w3-container w3-hover-shadow\"><a href="' + url.toString() + '">' + filename + '\'</a></div><div class=\"col w3-left\"><button onclick="decryptit(\'' + filename + '\')">SelEct it for decryption.</button></div></div>';
 
-          document.getElementById("divtofiles").innerHTML = document.getElementById("divtofiles").innerHTML + t;
-          //img_index++;
-          //
-        });
-      });
-    });
 
 
     // reading file names form the rsa encrypted folder
     let url = "/getfilename"
-      fetch('/getfilename', {
+      fetch('/getfilename/'+us_email, {
         method: "GET",
         cache: "no-cache",
         headers: new Headers()
@@ -165,6 +150,7 @@
       var dediv = document.getElementById('decryptdiv');
       if (dediv.style.display == 'none') {
         dediv.style.display = 'block';
+        console.log(val);
         temphtml = '<tr><td>File Name:</td><td>' + val + '</td></tr><br><tr><form  method ="POST" action="/decryptthefile"><input type="hidden" name="username" value="' + us_email + '" ><input type="hidden" name="filename" value="' + val + '" ><input type="submit" value="Decrypt it"></form></tr>';
         document.getElementById("nameoffile").innerHTML = temphtml;
       }
