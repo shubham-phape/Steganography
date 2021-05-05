@@ -140,7 +140,7 @@ def generatetwokey():
         #print(data)
         db.child("users").child(encodeemail(curruser)).push(data)
 
-        return render_template('rsa.html', useremail=curruser)
+        return render_template('dashboard.html', useremail=curruser)
 
     else:
         print("get")
@@ -184,7 +184,7 @@ def onekeyencryptfile():
         }
         db.child("users").child(encodeemail(curruser)).push(data)
 
-    return render_template('aes.html', useremail=curruser)
+    return render_template('dashboard.html', useremail=curruser)
 
 
 @app.route('/getfilename/<nm>', methods=['POST', 'GET'])
