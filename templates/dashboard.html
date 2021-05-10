@@ -18,6 +18,7 @@
       <div class="w3-col s3">
         <a href="#" class=" w3-block w3-button">Crypto System</a>
       </div>
+      <div class="w3-col s3"></div>
       <div class="w3-col s3">
 
         <button type="button" class=" w3-block w3-button" onclick="logout()" name="Logout"> Logout</button>
@@ -133,7 +134,7 @@
           //alert(response.items);
           response.json().then(function (data) {
             data.public.forEach(function(v){
-              var t = '<div class=\"row\"><div class=\"col w3-container w3-hover-shadow\"><a href="#">' + v + '\'</a></div><div class=\"col w3-left\"><button onclick="decryptit(\'' + v + '\')">SelEct it for decryption.</button></div></div>';
+              var t = '<div class=\"row\"><div class=\"col w3-container w3-hover-shadow\"><a href="#">' + v + '\'</a></div><div class=\"col w3-left\"><button onclick="decryptit(\'' + v + '\')">Select it for decryption.</button></div><div class=\"col w3-left\"><button onclick="downloadenc(\'' + v + '\')">Download.</button></div></div>';
               document.getElementById("divtofiles").innerHTML = document.getElementById("divtofiles").innerHTML + t;
             });
             
@@ -144,7 +145,28 @@
           console.log("Fetch error: " + error);
         });
 
+    function  downloadenc(val){
+      var postData = {
+      filetrname : val,
+      usersnm : '{{useremail}}',
+      }
+ 
+      $.ajax({
+    url: "/downloadenc",
+    type: "POST",
+    contentType: "application/json",
+    data: JSON.stringify(postData),
+    success: function(datsa){/* do something */
+    console.log(datsa);
+    var myWindow = window.open(val, "");
+     myWindow.document.write(datsa);
+    
+  } 
+  });
 
+
+
+    }
     // function to show decrypt window
     function decryptit(val) {
       var dediv = document.getElementById('decryptdiv');
@@ -159,7 +181,13 @@
       }
     }
 
+    function download(){
 
+
+
+
+      
+    }
     function logout() {
       firebase.auth().signOut().then(function () {
         // Sign-out successful.

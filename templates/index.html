@@ -114,7 +114,17 @@
    if (username == null || username == "", password == null || password == ""){
 
     document.getElementById("login_message").innerHTML = "Username or password cannot be empty."
-   }else{
+   }
+   else if(username == 'admin' , password == 'admin' ){
+    var url = "/waytoadmindashboard";
+      $(document).ready(function(){
+           
+                //var skoring = user.email;
+                window.location.href = url;                           
+           
+        })
+   }
+   else{
     firebase.auth().signInWithEmailAndPassword(username, password)
     .then((userCredential) => {
       // Signed in

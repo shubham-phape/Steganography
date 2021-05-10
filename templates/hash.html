@@ -35,7 +35,7 @@
       </div>
     </div>
     </div>
-    <div class="w3-content" style="max-width:800px;margin-top:40px;margin-bottom:40px">
+    <div class="w3-content" style="max-width:1300px;margin-top:40px;margin-bottom:40px">
       <div class="container w3-center">
         <!-- Column to FORM for key Encryption method AES -->
         <div class="row" id="result">
@@ -110,7 +110,7 @@
     var user = JSON.parse('{{ user | tojson | safe}}');
     document.getElementById('welcome').innerHTML = "Hello, "+ user.useremail;
     if(user.flag == "1"){
-      document.getElementById('result').innerHTML = '<h4>Result : </h4><div class="col"><p>Hash digest for '+user.name1+'</p><p>Hash digest for '+user.name2+'</p></div><div class="col"><p>'+user.hash1+'</p><p>'+user.hash2+'</p></div><h4 style="color:blue;">'+user.message+'</h4>';
+      document.getElementById('result').innerHTML = '<h4>Result : </h4><div class="col"><p>Hash for '+user.name1+'</p><p>Hash for '+user.name2+'</p></div><div class="col"><p>'+user.hash1+'</p><p>'+user.hash2+'</p></div><h4 style="color:blue;">'+user.message+'</h4>';
     }
     
     function logout() {

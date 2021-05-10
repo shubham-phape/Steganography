@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, make_response, send_from_directory
+from flask import Flask, render_template, request, jsonify, make_response, send_from_directory,send_file
 from cryptography.fernet import Fernet
 import pyrebase, flask, base64, urllib, binascii,os, json, hashlib
 from pathlib import Path
@@ -11,6 +11,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 # References: https://www.thepythoncode.com/article/encrypt-decrypt-files-symmetric-python
 # https://nitratine.net/blog/post/asymmetric-encryption-and-decryption-in-python/
 #https://stackoverflow.com/questions/24570066/calculate-md5-from-werkzeug-datastructures-filestorage-without-saving-the-object
+#https://docs.python.org/3/library/hashlib.html
 app = Flask(__name__)
 
 
@@ -41,6 +42,11 @@ def index():
 def waytodashboard(mail):
 
     return render_template('dashboard.html', useremail=mail)
+
+
+@app.route('/waytoadmindashboard', methods=['GET', 'POST'])
+def waytoadmindashboard():
+    return render_template('admin.html')
 
 
 @app.route('/hash/<mail>', methods=['GET', 'POST'])
@@ -286,6 +292,24 @@ def downloadfile(filename):
     return send_from_directory(path, filename)
 
 
+@app.route('/downloadenc', methods=['POST', 'GET'])
+def downloadenc():
+    
+    data = request.get_json()
+    filename = data['filetrname']
+    usname = data['usersnm']
+
+    #
+    path = "encrypted\\"+usname
+    print(path)
+    try:
+        return send_from_directory(path, filename)
+        #return send_from_directory(path, filename)
+    except Exception as e:
+        print(e)
+    return send_from_directory(path, filename)
+
+
 @app.route('/comparehash', methods=['GET', 'POST'])
 def comparehash():
     if (request.method == 'POST'):
@@ -294,10 +318,15 @@ def comparehash():
         curruser = request.form.get('cur_user')
         
         #hashing both the files
+        hash1 = hashlib.sha256(fileone.read())
+        hash2 = hashlib.sha256(filetwo.read())
 
-        img_key1 = hashlib.md5(fileone.read()).hexdigest() 
-        img_key2 = hashlib.md5(filetwo.read()).hexdigest() 
-
+        img_key1 = hash1.hexdigest() 
+        img_key2 = hash2.hexdigest()
+        # img_key1 = str(hashlib.sha256(fileone.read()))
+        # img_key2 = str(hashlib.sha256(filetwo.read()))
+        print("hash size:")
+        print(hash1.digest_size, hash2.digest_size)
         #comparing hash of both files
         m=''
         if(img_key1 == img_key2):

@@ -26,26 +26,33 @@
   </div>
   <div class="w3-content" style="max-width:1100px;margin-top:80px;margin-bottom:80px">
     <div class="container w3-center">
-      
+      <h3>Hello, Admin</h3>
+      <!-- <h3 style="text-align:center">Encrypt a file using Two key algorithm here it is RSA</h3> -->
+    </div>
+  </div>
+  <div class="w3-content" style="max-width:800px;margin-top:40px;margin-bottom:80px">
+    <div class="container w3-center" id="addcontent">
 
       <!---Row Starts here-->
       <div class="row">
-        <h3 style="text-align:center">Your Decrypted file is here</h3>
-        
+
         <!-- Column to FORM for key Encryption method AES -->
-        <div class="col">
-         <h4> {{filename}}</h4>
-        </div>
-        <div class="col">
-            <form method="POST" action="/downloadfile/{{filename}}">
-            <input type="submit" value="Download the File"  >
-            </form>
-          </div>
+            <div class="col">
+                <b>User Name<b>
+            </div>
+            <div class="col">
+                
+            </div>
+     </div>
+        <!-- Column to FORM for key Encryption method AES -->
+        
       </div>
       <!---Row Ends here-->
+      
 
     </div>
-  </div>
+
+
   <!--END of Body here-->
 
   <!-- Insert these scripts at the bottom of the HTML, but before you use any Firebase services -->
@@ -75,6 +82,14 @@
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     firebase.analytics();
+
+
+      let url = "/getallusers"
+      
+      firebase.auth().listUsers().then((userRecords) => {
+    userRecords.users.forEach((user) => console.log(user.toJSON()));
+    res.end('Retrieved users list successfully.');
+  }).catch((error) => console.log(error));
 
     
 
